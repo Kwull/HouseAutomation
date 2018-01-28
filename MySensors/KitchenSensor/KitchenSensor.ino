@@ -90,7 +90,7 @@ void setup()
   mySwitch.setPulseLength(201);
   //mySwitch.setRepeatTransmit(3);
 
-  metric = getConfig().isMetric;
+  metric = getControllerConfig().isMetric;
   lastSleep = 0;
 
   // request last state
@@ -122,7 +122,7 @@ void loop()
       Serial.println(metric ? " cm" : " in");
       #endif
 
-      if (dist < 20 && lastDist > 30){
+      if (dist >=1 && dist < 20 && lastDist > 30){
         // Serial.println("LIGHTS ON/OFF");
          mySwitch.send("111111100000100110000111");
          send(msgDistance.set(dist, 1));

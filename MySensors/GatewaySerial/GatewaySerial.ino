@@ -37,7 +37,7 @@
  */
 
 // Enable debug prints to serial monitor
-//#define MY_DEBUG 
+// #define MY_DEBUG 
 //#define MY_DEBUG_VERBOSE_SIGNING
 //#define MY_DEBUG_VERBOSE_RF24
 
@@ -63,7 +63,7 @@
 #endif
 
 // Flash leds on rx/tx/err
-#define MY_LEDS_BLINKING_FEATURE
+// #define MY_LEDS_BLINKING_FEATURE
 // Set blinking period
 #define MY_DEFAULT_LED_BLINK_PERIOD 300
 
@@ -107,7 +107,7 @@ const long interval = 30000;              // interval at which to read (millisec
 void setup() { 
   // Setup locally attached sensors
   dht.setup(HUMIDITY_SENSOR_DIGITAL_PIN); 
-  metric = getConfig().isMetric;
+  metric = getControllerConfig().isMetric;
 }
 
 void presentation() {
