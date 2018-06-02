@@ -34,4 +34,14 @@ max name 160a1d "Radiator Thermostat Frontview"
 max name 16083d "Window Backyard"
 max name 162cf5 "Window Frontview"
 max name 3 "Living Room"
+
+max pair 4
+max pair 4
+max pair 4
+
+max crosslink 4
+max name 167e5c "Wall Thermostat"
+max name 1515ab "Radiator Thermostat"
+max name 1605af "Window Frontview"
+max name 4 "Guest Room"
 ```
