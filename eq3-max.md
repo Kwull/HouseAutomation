@@ -44,4 +44,14 @@ max name 167e5c "Wall Thermostat"
 max name 1515ab "Radiator Thermostat"
 max name 1605af "Window Frontview"
 max name 4 "Guest Room"
+
+max pair 5
+max pair 5
+max pair 5
+
+max crosslink 5
+max name 17a5a1 "Wall Thermostat"
+max name 1515ee "Radiator Thermostat"
+max name 162c98 "Window Frontview"
+max name 5 "Kids Room"
 ```
