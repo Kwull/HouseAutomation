@@ -49,26 +49,31 @@
 #define CHILD_ID_HUM 0
 #define CHILD_ID_TEMP 1
 #define HUMIDITY_SENSOR_DIGITAL_PIN 3
-unsigned long SLEEP_TIME = 30000; // Sleep time between reads (in milliseconds)
  
 DHT dht;
-float lastTemp;
-float lastHum;
 boolean metric = true; 
 MyMessage msgHum(CHILD_ID_HUM, V_HUM);
 MyMessage msgTemp(CHILD_ID_TEMP, V_TEMP);
 
+// Sleep time between sensor updates (in milliseconds)
+// Must be >1000ms for DHT22 and >2000ms for DHT11
+unsigned long UPDATE_INTERVAL = 60000; // 1 min
+unsigned long lastRefreshTime;
+
 void setup()  
 { 
+  // Setup locally attached sensors
   dht.setup(HUMIDITY_SENSOR_DIGITAL_PIN); 
+  metric = getControllerConfig().isMetric;
 
-  metric = getConfig().isMetric;
+  // wait(dht.getMinimumSamplingPeriod());
+  lastRefreshTime = millis(); // delay first update for DHT22
 }
 
 void presentation()  
 { 
   // Send the Sketch Version Information to the Gateway
-  sendSketchInfo("Guestroom 1st fl", "1.0");
+  sendSketchInfo("Terassa", "2.0");
 
   // Register all sensors to gw (they will be created as child devices)
   present(CHILD_ID_HUM, S_HUM);
@@ -77,36 +82,32 @@ void presentation()
 
 void loop()      
 {  
-  wait(dht.getMinimumSamplingPeriod());
- 
+  boolean needRefresh = (millis() - lastRefreshTime) > UPDATE_INTERVAL;
+  if (!needRefresh)
+    return;
+
+  lastRefreshTime = millis();
+
   // Fetch temperatures from DHT sensor
   float temperature = dht.getTemperature();
   if (isnan(temperature)) {
       Serial.println("Failed reading temperature from DHT");
-  } else if (temperature != lastTemp) {
-    lastTemp = temperature;
+  } else {
     if (!metric) {
       temperature = dht.toFahrenheit(temperature);
     }
     send(msgTemp.set(temperature, 1));
-    #ifdef MY_DEBUG
-    Serial.print("T: ");
-    Serial.println(temperature);
-    #endif
+  //  Serial.print("T: ");
+  //  Serial.println(temperature);
   }
   
   // Fetch humidity from DHT sensor
   float humidity = dht.getHumidity();
   if (isnan(humidity)) {
       Serial.println("Failed reading humidity from DHT");
-  } else if (humidity != lastHum) {
-      lastHum = humidity;
-      send(msgHum.set(humidity, 1));
-      #ifdef MY_DEBUG
-      Serial.print("H: ");
-      Serial.println(humidity);
-      #endif
-  }
-  
-  sleep(SLEEP_TIME); //sleep a bit
+  } else {
+     send(msgHum.set(humidity, 1));
+  //   Serial.print("H: ");
+  //   Serial.println(humidity);
+  } 
 }
