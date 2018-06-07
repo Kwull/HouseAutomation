@@ -124,7 +124,7 @@ void loop()
 
             Serial.println("TURN ON/OF");
             mySwitch.send("111111100000100110000111");
-            
+
             send(msgLight.set(isLightsOn ? LIGHT_ON : LIGHT_OFF));
             //send(msgDistance.set(dist, 1));
             
