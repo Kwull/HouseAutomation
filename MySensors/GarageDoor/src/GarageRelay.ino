@@ -10,6 +10,7 @@
 #define MY_NODE_ID 10
 //#define MY_REPEATER_FEATURE
 #include <MySensors.h>
+#include <Bounce2.h>
 
 #define CHILD_ID_DOOR_CONTROL 0
 #define CHILD_ID_OPENED_REED 1
@@ -34,23 +35,27 @@ unsigned long lastRefreshTime;
 
 bool firstStart = true;
 
-void before()
+Bounce debouncer_door_closed = Bounce(); 
+Bounce debouncer_door_opened = Bounce(); 
+
+void setup()
 {
 		pinMode(DOOR_CONTROL_PIN, OUTPUT);
+    
     pinMode(DOOR_CLOSED_PIN, INPUT_PULLUP);
+    debouncer_door_closed.attach(DOOR_CLOSED_PIN);
+    debouncer_door_closed.interval(10); // interval in ms
+
     pinMode(DOOR_OPENED_PIN, INPUT_PULLUP);
+    debouncer_door_opened.attach(DOOR_OPENED_PIN);
+    debouncer_door_opened.interval(10); // interval in ms
 
     lastRefreshTime = millis();
 }
 
-void setup()
-{
-
-}
-
 void presentation()
 {
-	sendSketchInfo("Garage Door control", "3.0");
+	sendSketchInfo("GarageDoor", "3.1");
   present(CHILD_ID_DOOR_CONTROL, S_BINARY);
   present(CHILD_ID_OPENED_REED, S_DOOR);
   present(CHILD_ID_CLOSED_REED, S_DOOR);
@@ -60,6 +65,8 @@ void loop()
 {
   if (firstStart) {
     send(msgDoorCtrl.set(0));
+    send(msgClosed.set(1));
+    send(msgOpened.set(0));    
     request(CHILD_ID_DOOR_CONTROL, V_STATUS);
     wait(2000, C_SET, V_STATUS);
   }
@@ -68,11 +75,13 @@ void loop()
   if (needRefresh) {
      lastRefreshTime = millis();
   }
-  
- int proximity = digitalRead(DOOR_CLOSED_PIN);
+
+ debouncer_door_closed.update();
+ int proximity = debouncer_door_closed.read();
+
  if (proximity != oldClosedReedState || needRefresh){
     oldClosedReedState = proximity;
-    send(msgClosed.set(proximity==HIGH ? 1 : 0));
+    send(msgClosed.set(proximity==HIGH ? 1 : 0), true);
     
     if (proximity == HIGH) // If the pin reads high, the switch is opened.
       Serial.println("Door closed reed (orange) state: OPENED");
@@ -80,10 +89,12 @@ void loop()
       Serial.println("Door closed reed (orange) state: CLOSED");
  } 
   
- proximity = digitalRead(DOOR_OPENED_PIN);
+ debouncer_door_opened.update();
+ proximity = debouncer_door_opened.read();
+
  if (proximity != oldOpenedReedState || needRefresh){
      oldOpenedReedState = proximity;
-     send(msgOpened.set(proximity==HIGH ? 1 : 0));
+     send(msgOpened.set(proximity==HIGH ? 1 : 0), true);
     
      if (proximity == HIGH) // If the pin reads high, the switch is opened.
        Serial.println("Door opened reed (yellow) state: OPENED");
@@ -94,7 +105,10 @@ void loop()
 
 void receive(const MyMessage &message)
 {
-	// We only expect one type of message from controller. But we better check anyway.
+  if (message.isAck()) {
+     Serial.println("This is an ack from gateway");
+  }
+
 	if (message.type == V_STATUS) 
 	{
      if (firstStart) {
