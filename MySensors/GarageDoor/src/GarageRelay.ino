@@ -1,5 +1,5 @@
 // Enable debug prints to serial monitor
-//#define MY_DEBUG
+#define MY_DEBUG
 
 // Enable and select radio type attached
 #define MY_RADIO_NRF24
@@ -40,6 +40,7 @@ Bounce debouncer_door_opened = Bounce();
 
 void setup()
 {
+    Serial.println("Setting up...");
 		pinMode(DOOR_CONTROL_PIN, OUTPUT);
     
     pinMode(DOOR_CLOSED_PIN, INPUT_PULLUP);
@@ -55,6 +56,7 @@ void setup()
 
 void presentation()
 {
+  Serial.println("Sending presentation info...");
 	sendSketchInfo("GarageDoor", "3.1");
   present(CHILD_ID_DOOR_CONTROL, S_BINARY);
   present(CHILD_ID_OPENED_REED, S_DOOR);
@@ -64,6 +66,7 @@ void presentation()
 void loop()
 {
   if (firstStart) {
+    Serial.println("First start. Requesting current status...");
     send(msgDoorCtrl.set(0));
     send(msgClosed.set(1));
     send(msgOpened.set(0));    
